@@ -1,0 +1,66 @@
+##cloning yolov5
+!git clone https://github.com/ultralytics/yolov5  # clone
+%cd yolov5
+%pip install -qr requirements.txt comet_ml  # install
+
+import torch
+import utils
+display = utils.notebook_init()  # checks
+
+
+## unzip file for traning
+import zipfile
+
+# Specify the path to the ZIP file
+zip_file_path = '/content/number_plate.zip'
+
+# Specify the directory where you want to extract the contents
+extracted_dir = '/content/extracted/'
+
+# Create the extracted directory if it doesn't exist
+import os
+os.makedirs(extracted_dir, exist_ok=True)
+
+# Unzip the file
+with zipfile.ZipFile(zip_file_path, 'r') as zip_ref:
+    zip_ref.extractall(extracted_dir)
+
+print(f"File '{zip_file_path}' has been successfully extracted to '{extracted_dir}'.")
+
+
+## the code for traning the model
+!git clone https://github.com/ultralytics/yolov5.git
+
+# Change directory to the YOLOv5 repository
+%cd yolov5
+
+# Install required libraries
+!pip install -U -r requirements.txt
+
+# Define dataset paths
+data_dir = "/content/extracted/number_plate"
+train_dir = f"{data_dir}/images/train"
+val_dir = f"{data_dir}/images/val"
+train_labels = f"{data_dir}/labels/train"
+val_labels = f"{data_dir}/labels/val"
+
+# Create a YAML file for your dataset
+data_yaml = f"""
+train: {train_dir}
+val: {val_dir}
+nc: 1
+names: ['number_plate']
+"""
+
+with open("data/number_plate.yaml", "w") as f:
+    f.write(data_yaml)
+
+# Define YOLOv5 training command
+train_command = (
+    f"python train.py --img 640 --batch 16 --epochs 50 "
+    f"--data data/number_plate.yaml --cfg models/yolov5s.yaml "
+    f"--name yolov5s_number_plate --project /content/yolov5_number_plate"
+)
+
+# Start training
+!{train_command}
